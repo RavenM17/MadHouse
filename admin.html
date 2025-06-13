@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Admin - Toys's Madhouse</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-image: url('https://wallpapers.com/images/hd/vintage-toy-collection-dinosaursand-robots-gmc32zn50bp70m5r.jpg'); /* imagen de ejemplo */
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+    }
+    #login, #adminPanel {
+      max-width: 600px;
+      margin: 30px auto;
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 0 10px rgba(106, 27, 154, 0.3);
+    }
+    #adminPanel {
+      display: none;
+      text-align: left;
+    }
+    input, textarea {
+      width: 100%;
+      padding: 8px;
+      margin-top: 6px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      font-size: 14px;
+      box-sizing: border-box;
+    }
+    label {
+      margin-top: 12px;
+      display: block;
+      font-weight: bold;
+    }
+    button {
+      margin-top: 15px;
+      background: #6a1b9a;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    button:hover {
+      background: #8e24aa;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      font-size: 14px;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      vertical-align: top;
+    }
+    th {
+      background-color: #d1b3e0;
+      color: #4b0082;
+    }
+    .accion-btn {
+      background: #db4673;
+      padding: 5px 8px;
+      border-radius: 6px;
+      color: white;
+      border: none;
+      cursor: pointer;
+      font-size: 13px;
+      margin-right: 5px;
+    }
+    .accion-btn:hover {
+      background: #a62f53;
+    }
+    .small-textarea {
+      height: 50px;
+      resize: vertical;
+    }
+    img.thumb {
+      width: 50px;
+      height: 50px;
+      object-fit: contain;
+      margin-right: 4px;
+      border-radius: 6px;
+    }
+  </style>
+</head>
+<body>
+<script>
+  const password = prompt("Ingresa la contraseña de administrador:");
+  const claveCorrecta = "*17-28*"; // ← Aquí puedes cambiar la clave
+
+  if (password !== claveCorrecta) {
+    alert("Contraseña incorrecta. Redirigiendo al catálogo...");
+    window.location.href = "index.html"; // Redirige si no es correcto
+  }
+</script>
+  <div id="login">
+    <h2>🔒 Iniciar sesión</h2>
+    <input type="password" id="clave" placeholder="Contraseña" />
+    <button onclick="verificar()">Entrar</button>
+    <p id="error" style="color:red; display:none;">Contraseña incorrecta</p>
+  </div>
+
+  <div id="adminPanel">
+    <h1>Administrar Productos</h1>
+
+    <form id="productoForm">
+      <input type="hidden" id="editIndex" value="-1" />
+      
+      <label>Nombre:</label>
+      <input type="text" id="nombre" required />
+
+      <label>Precio:</label>
+      <input type="text" id="precio" required />
+
+      <label>Imágenes (URLs separadas por coma):</label>
+      <textarea id="imagenes" class="small-textarea" required></textarea>
+
+      <label>WhatsApp:</label>
+      <input type="text" id="whatsapp" required />
+
+      <label>Teléfono:</label>
+      <input type="text" id="telefono" required />
+
+      <button type="submit">Guardar Producto</button>
+      <button type="button" onclick="limpiarFormulario()" style="background:#999; margin-left: 10px;">Cancelar</button>
+    </form>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Nombre</th>
+          <th>Precio</th>
+          <th>Imágenes</th>
+          <th>WhatsApp</th>
+          <th>Teléfono</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody id="tablaProductos"></tbody>
+    </table>
+  </div>
+
+<script>
+  const contraseñaCorrecta = "Ojosapagados";
+
+  function verificar() {
+    const clave = document.getElementById("clave").value;
+    if (clave === contraseñaCorrecta) {
+      document.getElementById("login").style.display = "none";
+      document.getElementById("adminPanel").style.display = "block";
+      cargarProductos();
+    } else {
+      document.getElementById("error").style.display = "block";
+    }
+  }
+
+  const productoForm = document.getElementById('productoForm');
+  const tablaProductos = document.getElementById('tablaProductos');
+
+  productoForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+
+    const nombre = document.getElementById('nombre').value.trim();
+    const precio = document.getElementById('precio').value.trim();
+    const imagenes = document.getElementById('imagenes').value.trim().split(',').map(url => url.trim()).filter(url => url !== "");
+    const whatsapp = document.getElementById('whatsapp').value.trim();
+    const telefono = document.getElementById('telefono').value.trim();
+    const editIndex = Number(document.getElementById('editIndex').value);
+
+    if (!nombre || !precio || imagenes.length === 0 || !whatsapp || !telefono) {
+      alert("Por favor completa todos los campos correctamente.");
+      return;
+    }
+
+    const nuevoProducto = { nombre, precio, imagenes, whatsapp, telefono };
+
+    let productos = JSON.parse(localStorage.getItem('productos')) || [];
+
+    if (editIndex >= 0) {
+      productos[editIndex] = nuevoProducto;
+    } else {
+      productos.push(nuevoProducto);
+    }
+
+    localStorage.setItem('productos', JSON.stringify(productos));
+    limpiarFormulario();
+    cargarProductos();
+  });
+
+  function cargarProductos() {
+    let productos = JSON.parse(localStorage.getItem('productos')) || [];
+    tablaProductos.innerHTML = '';
+
+    productos.forEach((prod, index) => {
+      const fila = document.createElement('tr');
+
+      fila.innerHTML = `
+        <td>${prod.nombre}</td>
+        <td>${prod.precio}</td>
+        <td>${Array.isArray(prod.imagenes) ? prod.imagenes.map(url => `<img src="${url}" alt="${prod.nombre}" class="thumb">`).join('') : ''}</td>
+        <td><a href="https://wa.me/${prod.whatsapp}" target="_blank">${prod.whatsapp}</a></td>
+        <td><a href="tel:${prod.telefono}">${prod.telefono}</a></td>
+        <td>
+          <button class="accion-btn" onclick="editarProducto(${index})">Editar</button>
+          <button class="accion-btn" onclick="eliminarProducto(${index})">Eliminar</button>
+        </td>
+      `;
+      tablaProductos.appendChild(fila);
+    });
+  }
+
+  function editarProducto(index) {
+    let productos = JSON.parse(localStorage.getItem('productos')) || [];
+    const prod = productos[index];
+
+    document.getElementById('nombre').value = prod.nombre;
+    document.getElementById('precio').value = prod.precio;
+    document.getElementById('imagenes').value = prod.imagenes.join(', ');
+    document.getElementById('whatsapp').value = prod.whatsapp;
+    document.getElementById('telefono').value = prod.telefono;
+    document.getElementById('editIndex').value = index;
+
+    window.scrollTo({top: 0, behavior: 'smooth'});
+  }
+
+  function eliminarProducto(index) {
+    if (confirm('¿Quieres eliminar este producto?')) {
+      let productos = JSON.parse(localStorage.getItem('productos')) || [];
+      productos.splice(index, 1);
+      localStorage.setItem('productos', JSON.stringify(productos));
+      cargarProductos();
+    }
+  }
+
+  function limpiarFormulario() {
+    productoForm.reset();
+    document.getElementById('editIndex').value = -1;
+  }
+</script>
+</body>
+</html>

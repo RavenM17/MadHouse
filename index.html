@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Toys's Madhouse</title>
+  <style>
+    body {
+      font-family: 'Cooper Black', cursive, sans-serif;
+      background-image: url('https://w0.peakpx.com/wallpaper/1020/371/HD-wallpaper-cute-kittenm-toy-funny-stuff-cat-pisici.jpg');
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      padding: 40px;
+      margin: 0;
+      color: #4b0082;
+      min-height: 100vh;
+    }
+
+    h1 {
+      background-color: rgba(255, 255, 255, 0.85);
+      padding: 15px 250px;
+      border-radius: 15px;
+      text-align: center;
+      color: #4b0082;
+      font-family: 'Ravie', cursive;
+      box-shadow: 0 0 10px rgba(139, 0, 139, 0.3);
+      max-width: fit-content;
+      margin: 0 auto 30px;
+      font-size: 32px;
+    }
+
+    #catalogo {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      margin-top: 30px;
+    }
+
+    .producto {
+      background: rgba(255, 255, 255, 0.85);
+      border-radius: 12px;
+      box-shadow: 0 0 10px rgba(139, 0, 139, 0.3);
+      padding: 20px;
+      font-size: 14px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .carrusel {
+      position: relative;
+      overflow: hidden;
+      width: 100%;
+      height: 120px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .carrusel img {
+      height: 100%;
+      border-radius: 8px;
+      width: auto;
+      max-width: 100%;
+      object-fit: contain;
+      z-index: 1;
+      transition: none;
+    }
+
+    .carrusel button {
+      position: absolute;
+      top: 40%;
+      background: rgba(255, 255, 255, 0.6);
+      border: none;
+      padding: 10px 10px;
+      border-radius: 50%;
+      cursor: pointer;
+      font-weight: bold;
+      z-index: 5;
+    }
+
+    .anterior {
+      left: 5px;
+    }
+
+    .siguiente {
+      right: 5px;
+    }
+
+    .producto h2 {
+      font-family: 'Baskerville Old Face', cursive;
+      color: #8b008b;
+      margin: 10px 0 8px;
+      font-size: 18px;
+      text-align: center;
+    }
+
+    .producto p {
+      font-size: 14px;
+      margin: 6px 0;
+      font-weight: bold;
+      text-align: center;
+    }
+
+    .contacto a {
+      background-color: #189b18;
+      color: white;
+      padding: 8px 14px;
+      border-radius: 8px;
+      text-decoration: none;
+      display: inline-block;
+      margin-top: 10px;
+      font-weight: bold;
+      font-family: 'Arial Black', sans-serif;
+      font-size: 12px;
+      transition: background-color 0.3s ease;
+    }
+
+    .contacto a:hover {
+      background-color: #db4673;
+      cursor: pointer;
+    }
+
+    .contacto button.ofertar-btn {
+      background-color: #189b18;
+      color: white;
+      padding: 8px 14px;
+      border-radius: 8px;
+      border: none;
+      font-weight: bold;
+      font-family: 'Arial Black', sans-serif;
+      font-size: 12px;
+      margin-left: 10px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    
+    .contacto button.ofertar-btn:hover {
+      background-color: #db4673;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>CATÁLOGO DE JUGUETES</h1>
+  <div id="catalogo"></div>
+
+  <script>
+    const productos = JSON.parse(localStorage.getItem('productos')) || [];
+    const catalogoDiv = document.getElementById('catalogo');
+
+    if (productos.length === 0) {
+      catalogoDiv.innerHTML = '<p>No hay productos disponibles.</p>';
+    } else {
+      productos.forEach(producto => {
+        const div = document.createElement('div');
+        div.className = 'producto';
+
+        const imagenesHTML = `
+          <div class="carrusel">
+            <img src="${producto.imagenes[0] || ''}" alt="${producto.nombre}" class="imagen-activa"/>
+            <button class="anterior">←</button>
+            <button class="siguiente">→</button>
+          </div>
+        `;
+
+        div.innerHTML = `
+          ${imagenesHTML}
+          <h2>${producto.nombre}</h2>
+          <p>Precio: ${producto.precio}</p>
+          <div class="contacto">
+            <a href="https://wa.me/${producto.whatsapp}" target="_blank">WhatsApp</a>
+            <a href="tel:${producto.telefono}">Llamar</a>
+            <button class="ofertar-btn">Ofertar</button>
+          </div>
+        `;
+
+        catalogoDiv.appendChild(div);
+
+        const imagen = div.querySelector('img.imagen-activa');
+        const anterior = div.querySelector('button.anterior');
+        const siguiente = div.querySelector('button.siguiente');
+        let index = 0;
+
+        anterior.onclick = () => {
+          if (!producto.imagenes || producto.imagenes.length === 0) return;
+          index = (index - 1 + producto.imagenes.length) % producto.imagenes.length;
+          imagen.src = producto.imagenes[index];
+        };
+
+        siguiente.onclick = () => {
+          if (!producto.imagenes || producto.imagenes.length === 0) return;
+          index = (index + 1) % producto.imagenes.length;
+          imagen.src = producto.imagenes[index];
+        };
+
+        const botonOfertar = div.querySelector('.ofertar-btn');
+        botonOfertar.onclick = () => {
+          const mensaje = encodeURIComponent(`Hola, estoy interesado en hacer una oferta para el producto "${producto.nombre}". ¿Podemos conversar?`);
+          const urlWhatsApp = `https://wa.me/${producto.whatsapp}?text=${mensaje}`;
+          window.open(urlWhatsApp, '_blank');
+        };
+      });
+    }
+
+    // Mostrar botón admin solo si URL es ?admin=bob y contraseña correcta
+    window.onload = () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const adminValor = urlParams.get('admin');
+
+      if (adminValor === 'bob') {
+        const password = prompt("Ingrese la contraseña para acceder al modo admin:");
+        const claveCorrecta = "*L&J*";
+
+        if (password === claveCorrecta) {
+          document.getElementById('adminBtn').style.display = 'block';
+        } else {
+          alert("Contraseña incorrecta. Acceso denegado.");
+        }
+      }
+    };
+  </script>
+
+  <a href="admin.html" id="adminBtn" style="display:none; position: fixed; bottom: 10px; right: 10px; font-size: 12px; color: #ccc; text-decoration: none;">🛠️ Admin</a>
+</body>
+</html>
